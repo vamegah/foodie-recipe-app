@@ -50,7 +50,7 @@ const styles = StyleSheet.create({
   },
   articleImage: {
     width: "100%",
-    height: index % 3 === 0 ? hp(25) : hp(35),
+   
     borderRadius: 35,
     backgroundColor: "rgba(0, 0, 0, 0.05)", // bg-black/5
   },
