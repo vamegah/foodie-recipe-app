@@ -7,7 +7,6 @@ import {
     heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
 import Categories from "../components/categories";
-import FoodItems from "../components/recipes";
 import Recipe from "../components/recipes";
 
 export default function HomeScreen() {

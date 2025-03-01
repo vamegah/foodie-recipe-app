@@ -73,6 +73,37 @@ export default function FavoriteScreen() {
       >
         <Text style={{ color: "#fff" }}>Go back</Text>
       </TouchableOpacity>
+
+      {/* Favorite Recipes List */}
+      <FlatList
+        data={favoriteRecipesList}
+        keyExtractor={(item) => item.idFood.toString()} // Fix: Use idFood to match favoritesSlice.js
+        contentContainerStyle={styles.listContentContainer}
+        renderItem={({ item }) => (
+          <TouchableOpacity
+            style={styles.cardContainer}
+            onPress={() =>
+              navigation.navigate("RecipeDetail", {
+                recipe: {
+                  idFood: item.idFood, // Fix: Ensure correct ID reference
+                  recipeName: item.recipeName, // Standardizing name field
+                  recipeImage: item.recipeImage, // Standardizing image field
+                  recipeCategory: item.recipeCategory || "Uncategorized",
+                  ingredients: item.ingredients || [],
+                  recipeInstructions:
+                    item.recipeInstructions || "No instructions provided.",
+                },
+              })
+            }
+          >
+            {/* Image now correctly displayed */}
+            <Image source={{ uri: item.recipeImage }} style={styles.recipeImage} />
+            <Text style={styles.recipeTitle}>
+              {item.recipeName.length > 20 ? `${item.recipeName.substring(0, 20)}...` : item.recipeName}
+            </Text>
+          </TouchableOpacity>
+        )}
+      />
     
     </>
   );
