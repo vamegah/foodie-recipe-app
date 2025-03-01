@@ -52,7 +52,7 @@ export default function CustomRecipesScreen() {
             <View style={styles.imageContainer} testID="imageContainer">
                 {recipe.image && (
                     <Image source={{ uri: recipe.image }}
-                        styles={[
+                        style={[
                             styles.recipeImage, { height: index % 3 === 0 ? hp(25) : hp(35) },
                         ]}
 
