@@ -23,15 +23,15 @@ export default function MyRecipeScreen() {
     useEffect(() => {
         const fetchrecipes = async () => {
             try {
-                const storeRecipes = AsyncStorage.getItem("customrecipes");
-                if (storeRecipes) {
-                    setrecipes(JSON.parse(storeRecipes));
+                const storedRecipes = await AsyncStorage.getItem("customrecipes");
+                if (storedRecipes) {
+                    setrecipes(JSON.parse(storedRecipes));
                 }
-                setLoading(false)
-
             } catch (error) {
                 console.error("Error fetching recipes:", error);
-            } 
+            } finally {
+                setLoading(false);
+            }
         };
 
         fetchrecipes();
@@ -43,27 +43,24 @@ export default function MyRecipeScreen() {
 
     const handlerecipeClick = (recipe) => {
         navigation.navigate("CustomRecipesScreen", { recipe });
-
     };
-    const deleterecipe = async (index) => {
 
+    const deleterecipe = async (index) => {
         try {
             const updatedRecipes = [...recipes];
-            updatedRecipes.splice(index, 1); // Remove recipe from array
-            await AsyncStorage.setItem("customrecipes", JSON.stringify(updatedRecipes)); // Update AsyncStorage
-            setrecipes(updatedRecipes); // Update state
+            updatedRecipes.splice(index, 1);
+            await AsyncStorage.setItem("customrecipes", JSON.stringify(updatedRecipes));
+            setrecipes(updatedRecipes);
         } catch (error) {
-            console.error("Error deleting the recipe:", error);
+            console.error("Error deleting recipe:", error);
         }
-
     };
 
     const editrecipe = (recipe, index) => {
         navigation.navigate("RecipesFormScreen", {
             recipeToEdit: recipe,
             recipeIndex: index,
-          });
-
+        });
     };
 
     return (
@@ -86,7 +83,11 @@ export default function MyRecipeScreen() {
                     ) : (
                         recipes.map((recipe, index) => (
                             <View key={index} style={styles.recipeCard} testID="recipeCard">
-                                <TouchableOpacity testID="handlerecipeBtn" onPress={() => handlerecipeClick(recipe)}>
+                                <TouchableOpacity
+                                    testID="handlerecipeBtn"
+                                    onPress={() => handlerecipeClick(recipe)}
+                                >
+                                    {/* Render image if available */}
                                     {recipe.image ? (
                                         <Image
                                             source={{ uri: recipe.image }}
@@ -104,22 +105,17 @@ export default function MyRecipeScreen() {
                                 {/* Edit and Delete Buttons */}
                                 <View style={styles.actionButtonsContainer} testID="editDeleteButtons">
                                     <TouchableOpacity
-                                        onPress={() => {
-                                            editrecipe(recipe, index);
-                                            handlerecipeClick(recipe);
-
-                                        }}
                                         style={styles.editButton}
+                                        onPress={() => editrecipe(recipe, index)}
                                     >
                                         <Text style={styles.editButtonText}>Edit</Text>
                                     </TouchableOpacity>
                                     <TouchableOpacity
-                                        onPress={() => deleterecipe(index)}
                                         style={styles.deleteButton}
+                                        onPress={() => deleterecipe(index)}
                                     >
                                         <Text style={styles.deleteButtonText}>Delete</Text>
                                     </TouchableOpacity>
-
                                 </View>
                             </View>
                         ))
