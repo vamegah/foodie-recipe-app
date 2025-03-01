@@ -9,33 +9,38 @@ import {
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import {
     widthPercentageToDP as wp,
     heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
 
 export default function MyRecipeScreen() {
+
     const navigation = useNavigation();
     const [recipes, setrecipes] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const fetchrecipes = async () => {
-            try {
-                const storedRecipes = await AsyncStorage.getItem("customrecipes");
-                if (storedRecipes) {
-                    setrecipes(JSON.parse(storedRecipes));
-                }
-            } catch (error) {
-                console.error("Error fetching recipes:", error);
-            } finally {
-                setLoading(false);
+    // Fetch recipes from AsyncStorage and update the recipes state
+    const fetchrecipes = async () => {
+        try {
+            const storedrecipes = await AsyncStorage.getItem("customrecipes");
+            if (storedrecipes !== null) {
+                setrecipes(JSON.parse(storedrecipes));
             }
-        };
+        } catch (error) {
+            console.error("Error fetching recipes:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-        fetchrecipes();
-    }, []);
+    // Use useFocusEffect to refresh data when screen comes into focus
+    useFocusEffect(
+        React.useCallback(() => {
+            fetchrecipes();
+        }, [])
+    );
 
     const handleAddrecipe = () => {
         navigation.navigate("RecipesFormScreen");
@@ -47,10 +52,10 @@ export default function MyRecipeScreen() {
 
     const deleterecipe = async (index) => {
         try {
-            const updatedRecipes = [...recipes];
-            updatedRecipes.splice(index, 1);
-            await AsyncStorage.setItem("customrecipes", JSON.stringify(updatedRecipes));
-            setrecipes(updatedRecipes);
+            const updatedrecipes = [...recipes];
+            updatedrecipes.splice(index, 1);
+            await AsyncStorage.setItem("customrecipes", JSON.stringify(updatedrecipes));
+            setrecipes(updatedrecipes);
         } catch (error) {
             console.error("Error deleting recipe:", error);
         }
@@ -60,6 +65,7 @@ export default function MyRecipeScreen() {
         navigation.navigate("RecipesFormScreen", {
             recipeToEdit: recipe,
             recipeIndex: index,
+            onrecipeEdited: fetchrecipes, // Pass the callback to refresh recipes
         });
     };
 
@@ -74,6 +80,7 @@ export default function MyRecipeScreen() {
                 <Text style={styles.addButtonText}>Add New recipe</Text>
             </TouchableOpacity>
 
+            {/* Show and activity indicator while loading */}
             {loading ? (
                 <ActivityIndicator size="large" color="#f59e0b" />
             ) : (
@@ -83,23 +90,20 @@ export default function MyRecipeScreen() {
                     ) : (
                         recipes.map((recipe, index) => (
                             <View key={index} style={styles.recipeCard} testID="recipeCard">
-                                <TouchableOpacity
-                                    testID="handlerecipeBtn"
-                                    onPress={() => handlerecipeClick(recipe)}
-                                >
-                                    {/* Render image if available */}
-                                    {recipe.image ? (
-                                        <Image
-                                            source={{ uri: recipe.image }}
-                                            style={styles.recipeImage}
-                                        />
-                                    ) : null}
+
+                                <TouchableOpacity testID="handlerecipeBtn" onPress={() => handlerecipeClick(recipe)}>
+                                    <Image
+                                        source={{ uri: recipe.image }}
+                                        style={styles.recipeImage}
+                                    />
+
                                     <Text style={styles.recipeTitle}>{recipe.title}</Text>
                                     <Text style={styles.recipeDescription} testID="recipeDescp">
-                                        {recipe.description
-                                            ? recipe.description.substring(0, 50) + "…"
-                                            : ""}
+                                        {recipe.description.length > 50
+                                            ? recipe.description.substring(0, 50) + "..."
+                                            : recipe.description}
                                     </Text>
+
                                 </TouchableOpacity>
 
                                 {/* Edit and Delete Buttons */}
@@ -107,12 +111,14 @@ export default function MyRecipeScreen() {
                                     <TouchableOpacity
                                         style={styles.editButton}
                                         onPress={() => editrecipe(recipe, index)}
+                                        testID="editrecipeBtn"
                                     >
                                         <Text style={styles.editButtonText}>Edit</Text>
                                     </TouchableOpacity>
                                     <TouchableOpacity
                                         style={styles.deleteButton}
                                         onPress={() => deleterecipe(index)}
+                                        testID="deleterecipeBtn"
                                     >
                                         <Text style={styles.deleteButtonText}>Delete</Text>
                                     </TouchableOpacity>

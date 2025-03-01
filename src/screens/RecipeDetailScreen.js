@@ -9,18 +9,25 @@ import { useDispatch, useSelector } from "react-redux"; // Redux hooks
 import { toggleFavorite } from "../redux/favoritesSlice"; // Redux action
 
 export default function RecipeDetailScreen(props) {
-    const recipe = props.route.params; // recipe passed from previous screen
 
+    const recipe = props.route.params; // recipe passed from previous screen
+    // get access to the Redux dispatch function
     const dispatch = useDispatch();
+    // hook to access the current state of favorite recipes
     const favoriterecipes = useSelector(
         (state) => state.favorites.favoriterecipes
     );
+    // Check if the current recipe is marked as a favorite by comparing its 
+    // idFood with those in the favoriteRecipes array.
     const isFavourite = favoriterecipes?.some(
         (favrecipe) => favrecipe.idFood === recipe.idFood
     ); // Check by idrecipe
 
+    // hook is used to navigate back to the previous screen and to 
+    // toggle the favorite status of the recipe.
     const navigation = useNavigation();
 
+    // Use Redux dispatch to add the recipe to favorites
     const handleToggleFavorite = () => {
         dispatch(toggleFavorite(recipe)); // Dispatch the recipe to favorites
     };
@@ -37,7 +44,6 @@ export default function RecipeDetailScreen(props) {
                     source={{ uri: recipe.recipeImage }}
                     style={styles.recipeImage}
                 />
-
             </View>
 
             {/* Back Button and Favorite Button */}
@@ -70,7 +76,7 @@ export default function RecipeDetailScreen(props) {
                     testID="recipeDetailsContainer"
                 >
                     <Text style={styles.recipeTitle} testID="recipeTitle">
-                        {recipe.recipeTitle}
+                        {recipe.recipeName}
                     </Text>
                     <Text style={styles.recipeCategory} testID="recipeCategory">
                         {recipe.recipeCategory}
@@ -93,7 +99,6 @@ export default function RecipeDetailScreen(props) {
                         <Text style={styles.miscIcon}>🎚️</Text>
                         <Text style={styles.miscText}>Medium</Text>
                     </View>
-
                 </View>
 
                 {/* Ingredients */}
@@ -101,7 +106,7 @@ export default function RecipeDetailScreen(props) {
                     <Text style={styles.sectionTitle}>Ingredients</Text>
                     <View style={styles.ingredientsList} testID="ingredientsList">
                         {(recipe.ingredients).map((i) => (
-                            <View key={i} style={styles.ingredientItem}>
+                            <View key={`${i.ingredientName}-${i.measure}`} style={styles.ingredientItem}>
                                 <View style={styles.ingredientBullet} />
                                 <Text style={styles.ingredientText}>
                                     {/* {meal["strMeasure" + i]} {meal["strIngredient" + i]} */}
@@ -110,19 +115,19 @@ export default function RecipeDetailScreen(props) {
                             </View>
                         ))}
                     </View>
-
                 </View>
 
                 {/* Instructions */}
                 <View style={styles.sectionContainer} testID="sectionContainer">
                     <Text style={styles.sectionTitle}>Instructions</Text>
-                    <Text style={styles.instructionsText}>{recipe.recipeInstructions}</Text>
-
+                    <Text style={styles.instructionsText}>
+                        {recipe.recipeInstructions}
+                    </Text>
                 </View>
                 {/* Description */}
 
             </View>
-        </ScrollView>
+        </ScrollView >
     );
 }
 
